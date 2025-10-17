@@ -227,7 +227,10 @@ export function ChatKitPanel({
           const detail = extractErrorDetail(data, response.statusText);
           console.error("Create session request failed", {
             status: response.status,
+            statusText: response.statusText,
             body: data,
+            error: data?.error,
+            details: data?.details,
           });
           throw new Error(detail);
         }
