@@ -61,24 +61,6 @@ export async function POST(request: Request): Promise<Response> {
 
     const apiBase = process.env.CHATKIT_API_BASE ?? DEFAULT_CHATKIT_BASE;
     const url = `${apiBase}/v1/chatkit/sessions`;
-    
-    const domainPublicKey = process.env.CHATKIT_DOMAIN_PUBLIC_KEY;
-    const requestBody: Record<string, unknown> = {
-      workflow: { id: resolvedWorkflowId },
-      user: userId,
-      chatkit_configuration: {
-        file_upload: {
-          enabled:
-            parsedBody?.chatkit_configuration?.file_upload?.enabled ?? false,
-        },
-      },
-    };
-    
-    // Add domain public key if configured (required for domain allowlist)
-    if (domainPublicKey) {
-      requestBody.domain_public_key = domainPublicKey;
-    }
-    
     const upstreamResponse = await fetch(url, {
       method: "POST",
       headers: {
@@ -86,7 +68,16 @@ export async function POST(request: Request): Promise<Response> {
         Authorization: `Bearer ${openaiApiKey}`,
         "OpenAI-Beta": "chatkit_beta=v1",
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        workflow: { id: resolvedWorkflowId },
+        user: userId,
+        chatkit_configuration: {
+          file_upload: {
+            enabled:
+              parsedBody?.chatkit_configuration?.file_upload?.enabled ?? false,
+          },
+        },
+      }),
     });
 
     if (process.env.NODE_ENV !== "production") {
